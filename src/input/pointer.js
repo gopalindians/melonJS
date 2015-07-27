@@ -304,25 +304,26 @@
 
                 switch (activeEventList.indexOf(e.type)) {
                     case POINTER_MOVE:
-                        // moved out of bounds: trigger the POINTER_LEAVE callbacks
-                        if (handlers.pointerId === e.pointerId && !eventInBounds) {
-                            if (triggerEvent(handlers, activeEventList[POINTER_LEAVE], e, null)) {
+                        if (eventInBounds) {
+                            // trigger the POINTER_MOVE callbacks
+                            if (triggerEvent(handlers, e.type, e, e.pointerId)) {
                                 handled = true;
-                                break;
                             }
-                        }
-                        // no pointer & moved inside of bounds: trigger the POINTER_ENTER callbacks
-                        else if (handlers.pointerId === null && eventInBounds) {
-                            if (triggerEvent(handlers, activeEventList[POINTER_ENTER], e, e.pointerId)) {
-                                handled = true;
-                                break;
+                            if (handlers.pointerId === null) {
+                                // no pointer & moved inside of bounds: trigger the POINTER_ENTER callbacks
+                                if (triggerEvent(handlers, activeEventList[POINTER_ENTER], e, e.pointerId)) {
+                                    handled = true;
+                                }
                             }
-                        }
-
-                        // trigger the POINTER_MOVE callbacks
-                        if (eventInBounds && triggerEvent(handlers, e.type, e, e.pointerId)) {
-                            handled = true;
-                            break;
+                        } else /* !eventInBounds*/ {
+                            // moved out of bounds: trigger the POINTER_LEAVE callbacks
+                            if (handlers.pointerId === e.pointerId) {
+                                if (triggerEvent(handlers, activeEventList[POINTER_LEAVE], e, null)) {
+                                    handlers.pointerId = null;
+                                    handled = true;
+                                    break;
+                                }
+                            }
                         }
                         break;
 
